@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -26,6 +26,9 @@ export default function LoginPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl");
+
   const {
     register,
     handleSubmit,
@@ -49,7 +52,7 @@ export default function LoginPage() {
     }
 
     toast.success("Login successfull.");
-    router.push("/dashboard");
+    router.replace(callbackUrl || "/dashboard");
     router.refresh();
   }
 
