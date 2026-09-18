@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import { ChefApplication } from "@/models/ChefApplication";
@@ -6,9 +6,11 @@ import { ChefProfile } from "@/models/ChefProfile";
 import { User } from "@/models/User";
 
 export async function POST(
-  req: Request,
-  { params }: { params: { id: string } }
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
+
   const session = await auth();
   if (!session?.user?.roles?.includes("admin")) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -16,7 +18,7 @@ export async function POST(
 
   await connectDB();
 
-  const application = await ChefApplication.findById(params.id);
+  const application = await ChefApplication.findById(id);
   if (!application) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
