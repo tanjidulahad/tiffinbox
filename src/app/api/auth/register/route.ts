@@ -5,7 +5,7 @@ import { hashPassword } from "@/lib/auth-utils";
 
 export async function POST(req: Request) {
   try {
-    const { name, email, password, role } = await req.json();
+    const { name, email, password } = await req.json();
 
     await connectDB();
 

@@ -1,3 +1,4 @@
+import { ExtraRole } from "@/models/User";
 import type { NextAuthConfig } from "next-auth";
 
 export const authConfig = {
@@ -15,7 +16,7 @@ export const authConfig = {
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
-        session.user.roles = token.roles as string[];
+        session.user.roles = token.roles as ExtraRole[];
       }
       return session;
     },
