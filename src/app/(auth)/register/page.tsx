@@ -18,13 +18,6 @@ import {
     CardTitle,
     CardDescription,
 } from "@/components/ui/card";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
 
 import { registerSchema, RegisterInput } from "@/lib/validations/auth";
 
@@ -121,26 +114,6 @@ export default function RegisterPage() {
                                     <p className="text-sm text-destructive">
                                         {errors.password.message}
                                     </p>
-                                )}
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label>Who you are?</Label>
-                                <Select
-                                    onValueChange={(val) =>
-                                        setValue("role", val as "customer" | "chef")
-                                    }
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="customer">Customer</SelectItem>
-                                        <SelectItem value="chef">Home Chef</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                {errors.role && (
-                                    <p className="text-sm text-destructive">{errors.role.message}</p>
                                 )}
                             </div>
 

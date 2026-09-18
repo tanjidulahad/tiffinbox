@@ -24,13 +24,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           credentials.password as string,
           user.password
         );
+        console.log("user is valid:",credentials.password)
         if (!isValid) return null;
 
         return {
           id: user._id.toString(),
           name: user.name,
           email: user.email,
-          role: user.role,
+          roles: [...user.roles],
         };
       },
     }),

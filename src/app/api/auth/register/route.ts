@@ -23,7 +23,6 @@ export async function POST(req: Request) {
       name,
       email,
       password: hashedPassword,
-      role: role || "customer",
     });
 
     return NextResponse.json(

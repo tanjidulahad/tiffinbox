@@ -6,9 +6,11 @@ const { auth } = NextAuth(authConfig);
 
 const authRoutes = ["/login", "/register"];
 
-const roleBasedRoutes: Record<string, string> = {
-  "/dashboard": "customer",
-  "/orders": "customer",
+// যে prefix গুলোতে শুধু login থাকলেই চলবে (কোনো special role লাগবে না)
+const customerRoutes = ["/dashboard", "/orders", "/notifications", "/become-a-chef"];
+
+// যে prefix গুলোতে নির্দিষ্ট extra role লাগবে
+const roleGatedRoutes: Record<string, "chef" | "admin"> = {
   "/chef-dashboard": "chef",
   "/menu": "chef",
   "/admin": "admin",
@@ -17,54 +19,55 @@ const roleBasedRoutes: Record<string, string> = {
 export default auth((req) => {
   const { nextUrl } = req;
   const isLoggedIn = !!req.auth;
-  const userRole = req.auth?.user?.role;
+  const userRoles = req.auth?.user?.roles || [];
   const path = nextUrl.pathname;
 
+  console.log("Current User:", req.auth?.user,path)
+
+
   if (isLoggedIn && authRoutes.includes(path)) {
-    const redirectPath = getDashboardPath(userRole);
-    return NextResponse.redirect(new URL(redirectPath, nextUrl));
+    return NextResponse.redirect(new URL("/dashboard", nextUrl));
   }
 
-  const matchedRolePrefix = Object.keys(roleBasedRoutes).find((prefix) =>
-    path.startsWith(prefix)
-  );
-
-  if (matchedRolePrefix && !isLoggedIn) {
+  const matchedCustomerPrefix = customerRoutes.find((p) => path.startsWith(p));
+  if (matchedCustomerPrefix && !isLoggedIn) {
     const loginUrl = new URL("/login", nextUrl);
     loginUrl.searchParams.set("callbackUrl", path);
     return NextResponse.redirect(loginUrl);
   }
 
-  if (matchedRolePrefix && isLoggedIn) {
-    const requiredRole = roleBasedRoutes[matchedRolePrefix];
-    if (userRole !== requiredRole) {
-      const redirectPath = getDashboardPath(userRole);
-      return NextResponse.redirect(new URL(redirectPath, nextUrl));
+  const matchedRoleGatedPrefix = Object.keys(roleGatedRoutes).find((p) =>
+    path.startsWith(p)
+  );
+  console.log("matchedRoleGatedPrefix", matchedRoleGatedPrefix)
+  if (matchedRoleGatedPrefix) {
+    if (!isLoggedIn) {
+      const loginUrl = new URL("/login", nextUrl);
+      loginUrl.searchParams.set("callbackUrl", path);
+      return NextResponse.redirect(loginUrl);
+    }
+    const requiredRole = roleGatedRoutes[matchedRoleGatedPrefix];
+    console.log("requiredRole", requiredRole)
+    console.log("userRoles", userRoles)
+    console.log("requiredRole if condition", !userRoles.includes(requiredRole))
+    if (!userRoles.includes(requiredRole)) {
+      return NextResponse.redirect(new URL("/dashboard", nextUrl));
     }
   }
 
   return NextResponse.next();
 });
 
-function getDashboardPath(role?: string) {
-  switch (role) {
-    case "chef":
-      return "/chef-dashboard";
-    case "admin":
-      return "/admin";
-    default:
-      return "/dashboard";
-  }
-}
-
 export const config = {
   matcher: [
     "/dashboard/:path*",
     "/orders/:path*",
+    "/notifications/:path*",
     "/chef-dashboard/:path*",
     "/menu/:path*",
     "/admin/:path*",
     "/login",
     "/register",
+    "/become-a-chef",
   ],
 };
